@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grade Calculator — NextGen Nurses</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy:       #0A1628;
+    --navy-mid:   #0F2040;
+    --navy-card:  #132038;
+    --blue:       #1A5CDB;
+    --blue-light: #4A90F5;
+    --blue-glow:  rgba(26, 92, 219, 0.25);
+    --gold:       #F5C842;
+    --gold-dim:   rgba(245, 200, 66, 0.15);
+    --white:      #FFFFFF;
+    --white-70:   rgba(255,255,255,0.70);
+    --white-40:   rgba(255,255,255,0.40);
+    --white-15:   rgba(255,255,255,0.08);
+    --white-8:    rgba(255,255,255,0.05);
+    --green:      #22C55E;
+    --green-dim:  rgba(34, 197, 94, 0.12);
+    --red:        #EF4444;
+    --red-dim:    rgba(239, 68, 68, 0.12);
+    --amber:      #F59E0B;
+    --amber-dim:  rgba(245, 158, 11, 0.12);
+    --slate:      rgba(255,255,255,0.12);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--navy);
+    color: var(--white);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 15% 10%, rgba(26,92,219,0.18) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 50% at 85% 80%, rgba(26,92,219,0.12) 0%, transparent 55%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page-wrap {
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+  }
+
+  /* ── NAV ── */
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 28px 0 0;
+    margin-bottom: 48px;
+  }
+
+  .nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+  }
+
+  .logo-icon {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, var(--blue), var(--blue-light));
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 14px;
+    color: var(--white);
+    box-shadow: 0 4px 16px var(--blue-glow);
+    flex-shrink: 0;
+  }
+
+  .logo-text { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; color: var(--white); }
+  .logo-sub { font-size: 11px; color: var(--white-40); margin-top: 1px; }
+
+  .back-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--white-40);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .back-link:hover { color: var(--white-70); }
+  .back-link svg { width: 14px; height: 14px; stroke: currentColor; fill: none; }
+
+  /* ── HERO ── */
+  .hero {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--blue-light);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .hero-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(28px, 5vw, 44px);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    margin-bottom: 10px;
+  }
+
+  .hero-title span {
+    background: linear-gradient(135deg, var(--blue-light), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-sub { font-size: 14px; color: var(--white-40); }
+
+  /* ── SCALE TOGGLE ── */
+  .scale-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 32px;
+  }
+
+  .scale-label { font-size: 12px; color: var(--white-40); font-weight: 500; }
+
+  .toggle-group {
+    display: flex;
+    background: var(--white-8);
+    border: 1px solid var(--slate);
+    border-radius: 10px;
+    padding: 3px;
+    gap: 3px;
+  }
+
+  .toggle-btn {
+    padding: 6px 16px;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--white-40);
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.15s;
+    letter-spacing: 0.02em;
+  }
+
+  .toggle-btn.active {
+    background: var(--blue);
+    color: var(--white);
+    box-shadow: 0 2px 8px var(--blue-glow);
+  }
+
+  /* ── RESULTS SUMMARY ── */
+  .summary-bar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .summary-card {
+    background: var(--navy-card);
+    border: 1px solid var(--slate);
+    border-radius: 14px;
+    padding: 20px;
+    text-align: center;
+    transition: border-color 0.3s;
+  }
+
+  .summary-card.pass { border-color: rgba(34,197,94,0.3); }
+  .summary-card.fail { border-color: rgba(239,68,68,0.3); }
+  .summary-card.warning { border-color: rgba(245,158,11,0.3); }
+
+  .summary-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--white-40);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .summary-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--white);
+    line-height: 1;
+    margin-bottom: 4px;
+    transition: color 0.3s;
+  }
+
+  .summary-value.pass { color: var(--green); }
+  .summary-value.fail { color: var(--red); }
+  .summary-value.warning { color: var(--amber); }
+
+  .summary-sub { font-size: 11px; color: var(--white-40); }
+
+  /* ── TABLE ── */
+  .table-card {
+    background: var(--navy-card);
+    border: 1px solid var(--slate);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+
+  .table-header {
+    display: grid;
+    grid-template-columns: 2fr 80px 100px 110px 90px;
+    gap: 0;
+    padding: 12px 20px;
+    background: var(--white-8);
+    border-bottom: 1px solid var(--slate);
+  }
+
+  .th {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--white-40);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .th.right { text-align: right; }
+  .th.center { text-align: center; }
+
+  .table-body { padding: 8px 12px; }
+
+  .table-row {
+    display: grid;
+    grid-template-columns: 2fr 80px 100px 110px 90px;
+    gap: 0;
+    align-items: center;
+    padding: 6px 8px;
+    border-radius: 8px;
+    margin-bottom: 4px;
+    transition: background 0.15s;
+  }
+
+  .table-row:hover { background: var(--white-8); }
+
+  .row-num {
+    font-size: 11px;
+    color: var(--white-40);
+    font-weight: 600;
+    width: 20px;
+    flex-shrink: 0;
+  }
+
+  .cell-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-right: 8px;
+  }
+
+  .input-name {
+    flex: 1;
+    background: var(--white-8);
+    border: 1px solid transparent;
+    border-radius: 7px;
+    padding: 8px 10px;
+    font-size: 12px;
+    color: var(--white-70);
+    font-family: 'Inter', sans-serif;
+    transition: all 0.15s;
+    width: 100%;
+  }
+
+  .input-name:focus {
+    outline: none;
+    border-color: rgba(26,92,219,0.4);
+    background: rgba(26,92,219,0.08);
+    color: var(--white);
+  }
+
+  .input-name::placeholder { color: var(--white-40); font-size: 11px; }
+
+  .input-credits, .input-grade {
+    background: var(--white-8);
+    border: 1px solid transparent;
+    border-radius: 7px;
+    padding: 8px 10px;
+    font-size: 13px;
+    color: var(--white-70);
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    transition: all 0.15s;
+    width: 100%;
+    text-align: center;
+  }
+
+  .input-credits:focus, .input-grade:focus {
+    outline: none;
+    border-color: rgba(26,92,219,0.4);
+    background: rgba(26,92,219,0.08);
+    color: var(--white);
+  }
+
+  .input-credits::placeholder, .input-grade::placeholder { color: var(--white-40); font-size: 11px; font-family: 'Inter', sans-serif; font-weight: 400; }
+
+  .cell-credits { padding: 0 6px; }
+  .cell-grade { padding: 0 6px; }
+
+  .cell-pct {
+    text-align: right;
+    padding-right: 8px;
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--white-40);
+    transition: color 0.2s;
+  }
+
+  .cell-pct.pass { color: var(--green); }
+  .cell-pct.fail { color: var(--red); }
+  .cell-pct.warning { color: var(--amber); }
+
+  .cell-status { display: flex; justify-content: center; }
+
+  .status-pill {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+
+  .pill-pass { background: var(--green-dim); color: var(--green); border: 1px solid rgba(34,197,94,0.2); }
+  .pill-fail { background: var(--red-dim); color: var(--red); border: 1px solid rgba(239,68,68,0.2); }
+  .pill-warning { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(245,158,11,0.2); }
+  .pill-empty { background: var(--white-8); color: var(--white-40); border: 1px solid var(--slate); }
+
+  /* ── ACTIONS ── */
+  .actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 32px;
+  }
+
+  .btn {
+    padding: 10px 24px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+    letter-spacing: 0.02em;
+  }
+
+  .btn-primary {
+    background: var(--blue);
+    color: var(--white);
+    box-shadow: 0 4px 16px var(--blue-glow);
+  }
+
+  .btn-primary:hover { background: var(--blue-light); transform: translateY(-1px); }
+
+  .btn-ghost {
+    background: var(--white-8);
+    color: var(--white-40);
+    border: 1px solid var(--slate);
+  }
+
+  .btn-ghost:hover { color: var(--white-70); background: var(--white-15); }
+
+  /* ── SCALE REFERENCE ── */
+  .reference-section { margin-bottom: 32px; }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--white-40);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .section-line { flex: 1; height: 1px; background: var(--slate); }
+
+  .reference-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 8px;
+  }
+
+  .ref-item {
+    background: var(--navy-card);
+    border: 1px solid var(--slate);
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .ref-uv {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--white-70);
+  }
+
+  .ref-pct {
+    font-size: 12px;
+    color: var(--white-40);
+  }
+
+  .ref-desc {
+    font-size: 10px;
+    color: var(--white-40);
+    margin-top: 2px;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--slate);
+    padding-top: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .footer-left { font-size: 12px; color: var(--white-40); }
+  .footer-left strong { color: var(--white-70); font-weight: 600; }
+  .footer-right { font-size: 11px; color: var(--white-40); font-style: italic; }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero          { animation: fadeUp 0.5s ease both; }
+  .scale-toggle  { animation: fadeUp 0.5s 0.05s ease both; }
+  .summary-bar   { animation: fadeUp 0.5s 0.1s ease both; }
+  .table-card    { animation: fadeUp 0.5s 0.15s ease both; }
+  .actions       { animation: fadeUp 0.5s 0.2s ease both; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 600px) {
+    .table-header,
+    .table-row {
+      grid-template-columns: 1.5fr 60px 80px 90px 75px;
+    }
+    .summary-bar { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <!-- NAV -->
+  <nav>
+    <a href="index.html" class="nav-logo">
+      <div class="logo-icon">NGS</div>
+      <div>
+        <div class="logo-text">NextGen Scholars</div>
+        <div class="logo-sub">Philippines</div>
+      </div>
+    </a>
+    <a href="index.html" class="back-link">
+      <svg viewBox="0 0 24 24" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      Home
+    </a>
+  </nav>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-eyebrow">NextGen Nurses · Tool</div>
+    <div class="hero-title">UV Grade <span>Calculator</span></div>
+    <div class="hero-sub">Enter your UV grades and credits — see your GPA and percentage instantly</div>
+  </div>
+
+  <!-- SCALE TOGGLE -->
+  <div class="scale-toggle">
+    <span class="scale-label">Scale:</span>
+    <div class="toggle-group">
+      <button class="toggle-btn active" onclick="setScale('UV')" id="btn-UV">UV Scale</button>
+      <button class="toggle-btn" onclick="setScale('USJR')" id="btn-USJR">USJR Scale</button>
+    </div>
+    <span class="scale-label" id="scale-note" style="margin-left: 4px;">· Y1S2 onwards</span>
+  </div>
+
+  <!-- SUMMARY -->
+  <div class="summary-bar">
+    <div class="summary-card" id="card-gpa">
+      <div class="summary-label">Weighted GPA</div>
+      <div class="summary-value" id="val-gpa">—</div>
+      <div class="summary-sub">UV numeric scale</div>
+    </div>
+    <div class="summary-card" id="card-pct">
+      <div class="summary-label">GPA Equivalent</div>
+      <div class="summary-value" id="val-pct">—</div>
+      <div class="summary-sub">Percentage equivalent</div>
+    </div>
+    <div class="summary-card" id="card-status">
+      <div class="summary-label">Program Status</div>
+      <div class="summary-value" id="val-status">—</div>
+      <div class="summary-sub" id="sub-status">Minimum: 81%</div>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-card">
+    <div class="table-header">
+      <div class="th">Subject</div>
+      <div class="th center">Credits</div>
+      <div class="th center">UV Grade</div>
+      <div class="th right">Equivalent %</div>
+      <div class="th center">Status</div>
+    </div>
+    <div class="table-body" id="tableBody"></div>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="actions">
+    <button class="btn btn-ghost" onclick="clearAll()">Clear All</button>
+    <button class="btn btn-primary" onclick="window.print()">Print / Save</button>
+  </div>
+
+  <!-- SCALE REFERENCE -->
+  <div class="reference-section">
+    <div class="section-header">
+      <div class="section-title" id="ref-title">UV Scale Reference</div>
+      <div class="section-line"></div>
+    </div>
+    <div class="reference-grid" id="refGrid"></div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-left"><strong>NextGen Nurses</strong> · Grade Calculator · UV & USJR Scales</div>
+    <div class="footer-right">Based on official UV grading system</div>
+  </footer>
+
+</div>
+
+<script>
+// ── SCALE TABLES ──
+const UV_SCALE = [
+  { min: 1.00, max: 1.09, pctMin: 95.00, pctMax: 100.00, desc: 'Excellent',  us: 'A+' },
+  { min: 1.10, max: 1.50, pctMin: 90.00, pctMax: 94.99,  desc: 'Superior',   us: 'A'  },
+  { min: 1.60, max: 2.00, pctMin: 85.00, pctMax: 89.99,  desc: 'Very Good',  us: 'B+' },
+  { min: 2.10, max: 2.50, pctMin: 80.00, pctMax: 84.99,  desc: 'Good',       us: 'B'  },
+  { min: 2.60, max: 2.90, pctMin: 76.00, pctMax: 79.99,  desc: 'Fair',       us: 'C+' },
+  { min: 3.00, max: 3.99, pctMin: 75.00, pctMax: 75.99,  desc: 'Pass',       us: 'C-' },
+  { min: 5.00, max: 5.00, pctMin: 0.00,  pctMax: 74.99,  desc: 'Failing',    us: 'F'  },
+];
+
+const USJR_SCALE = [
+  { min: 1.00, max: 1.24, pctMin: 96.00, pctMax: 100.00, desc: 'Excellent',       us: 'A+' },
+  { min: 1.25, max: 1.49, pctMin: 94.00, pctMax: 95.99,  desc: 'Superior',        us: 'A'  },
+  { min: 1.50, max: 1.74, pctMin: 91.00, pctMax: 93.99,  desc: 'Very Good',       us: 'A-' },
+  { min: 1.75, max: 1.99, pctMin: 89.00, pctMax: 90.99,  desc: 'Good',            us: 'B+' },
+  { min: 2.00, max: 2.24, pctMin: 86.00, pctMax: 88.99,  desc: 'Very Satisfactory', us: 'B' },
+  { min: 2.25, max: 2.49, pctMin: 83.00, pctMax: 85.99,  desc: 'High Average',    us: 'B-' },
+  { min: 2.50, max: 2.74, pctMin: 80.00, pctMax: 82.99,  desc: 'Average',         us: 'C+' },
+  { min: 2.75, max: 2.99, pctMin: 77.00, pctMax: 79.99,  desc: 'Fair',            us: 'C'  },
+  { min: 3.00, max: 3.99, pctMin: 75.00, pctMax: 76.99,  desc: 'Pass',            us: 'C-' },
+  { min: 4.00, max: 4.99, pctMin: 70.00, pctMax: 74.99,  desc: 'Conditional',     us: 'D'  },
+  { min: 5.00, max: 5.00, pctMin: 0.00,  pctMax: 69.99,  desc: 'Failing',         us: 'F'  },
+];
+
+let currentScale = 'UV';
+const MIN_PCT = 81;
+const ROWS = 15;
+
+// ── CONVERT UV → PCT ──
+function uvToPct(grade, scale) {
+  const table = scale === 'UV' ? UV_SCALE : USJR_SCALE;
+  if (!grade || isNaN(grade)) return null;
+  grade = parseFloat(grade);
+  if (grade < 1.00 || grade > 5.00) return null;
+
+  for (const bracket of table) {
+    if (grade >= bracket.min && grade <= bracket.max) {
+      if (bracket.min === bracket.max) return bracket.pctMin; // 5.00 = failing
+      const range = bracket.max - bracket.min;
+      const pctRange = bracket.pctMax - bracket.pctMin;
+      const ratio = (bracket.max - grade) / range; // higher grade = lower number = higher %
+      return parseFloat((bracket.pctMin + ratio * pctRange).toFixed(2));
+    }
+  }
+  return null;
+}
+
+// ── BUILD TABLE ──
+function buildTable() {
+  const body = document.getElementById('tableBody');
+  body.innerHTML = '';
+  for (let i = 0; i < ROWS; i++) {
+    const row = document.createElement('div');
+    row.className = 'table-row';
+    row.innerHTML = `
+      <div class="cell-name">
+        <span class="row-num">${i + 1}</span>
+        <input class="input-name" type="text" placeholder="Subject name" id="name-${i}" oninput="calc()">
+      </div>
+      <div class="cell-credits">
+        <input class="input-credits" type="number" placeholder="Units" id="credits-${i}" min="1" max="6" step="1" oninput="calc()">
+      </div>
+      <div class="cell-grade">
+        <input class="input-grade" type="number" placeholder="1.00–5.00" id="grade-${i}" min="1" max="5" step="0.01" oninput="calc()">
+      </div>
+      <div class="cell-pct" id="pct-${i}">—</div>
+      <div class="cell-status" id="status-${i}"><span class="status-pill pill-empty">—</span></div>
+    `;
+    body.appendChild(row);
+  }
+}
+
+// ── CALCULATE ──
+function calc() {
+  let totalWeighted = 0;
+  let totalCredits = 0;
+  let totalPctWeighted = 0;
+  let filledRows = 0;
+
+  for (let i = 0; i < ROWS; i++) {
+    const grade = parseFloat(document.getElementById(`grade-${i}`).value);
+    const credits = parseFloat(document.getElementById(`credits-${i}`).value);
+    const pctEl = document.getElementById(`pct-${i}`);
+    const statusEl = document.getElementById(`status-${i}`);
+
+    if (!grade || !credits || isNaN(grade) || isNaN(credits)) {
+      pctEl.textContent = '—';
+      pctEl.className = 'cell-pct';
+      statusEl.innerHTML = '<span class="status-pill pill-empty">—</span>';
+      continue;
+    }
+
+    const pct = uvToPct(grade, currentScale);
+    if (pct === null) {
+      pctEl.textContent = '!';
+      pctEl.className = 'cell-pct fail';
+      statusEl.innerHTML = '<span class="status-pill pill-fail">Invalid</span>';
+      continue;
+    }
+
+    filledRows++;
+    totalWeighted += grade * credits;
+    totalPctWeighted += pct * credits;
+    totalCredits += credits;
+
+    pctEl.textContent = pct.toFixed(2) + '%';
+
+    if (pct >= MIN_PCT + 4) {
+      pctEl.className = 'cell-pct pass';
+      statusEl.innerHTML = '<span class="status-pill pill-pass">Pass ✓</span>';
+    } else if (pct >= MIN_PCT) {
+      pctEl.className = 'cell-pct warning';
+      statusEl.innerHTML = '<span class="status-pill pill-warning">Borderline</span>';
+    } else {
+      pctEl.className = 'cell-pct fail';
+      statusEl.innerHTML = '<span class="status-pill pill-fail">Below min</span>';
+    }
+  }
+
+  // Update summary
+  if (filledRows === 0 || totalCredits === 0) {
+    document.getElementById('val-gpa').textContent = '—';
+    document.getElementById('val-pct').textContent = '—';
+    document.getElementById('val-status').textContent = '—';
+    document.getElementById('card-gpa').className = 'summary-card';
+    document.getElementById('card-pct').className = 'summary-card';
+    document.getElementById('card-status').className = 'summary-card';
+    document.getElementById('val-gpa').className = 'summary-value';
+    document.getElementById('val-pct').className = 'summary-value';
+    document.getElementById('val-status').className = 'summary-value';
+    return;
+  }
+
+  const wGPA = (totalWeighted / totalCredits).toFixed(2);
+  const wPct = (totalPctWeighted / totalCredits).toFixed(2);
+
+  document.getElementById('val-gpa').textContent = wGPA;
+  document.getElementById('val-pct').textContent = wPct + '%';
+
+  const pctNum = parseFloat(wPct);
+
+  if (pctNum >= MIN_PCT + 4) {
+    setStatus('pass', 'Good Standing', 'summary-card pass', 'summary-value pass');
+  } else if (pctNum >= MIN_PCT) {
+    setStatus('warning', 'Borderline', 'summary-card warning', 'summary-value warning');
+  } else {
+    setStatus('fail', 'Below Minimum', 'summary-card fail', 'summary-value fail');
+  }
+
+  document.getElementById('val-gpa').className = 'summary-value';
+  document.getElementById('card-gpa').className = 'summary-card';
+}
+
+function setStatus(type, label, cardClass, valClass) {
+  document.getElementById('val-status').textContent = label;
+  document.getElementById('card-status').className = cardClass;
+  document.getElementById('val-pct').className = valClass;
+  document.getElementById('val-status').className = valClass;
+}
+
+// ── SCALE TOGGLE ──
+function setScale(scale) {
+  currentScale = scale;
+  document.getElementById('btn-UV').className = scale === 'UV' ? 'toggle-btn active' : 'toggle-btn';
+  document.getElementById('btn-USJR').className = scale === 'USJR' ? 'toggle-btn active' : 'toggle-btn';
+  document.getElementById('scale-note').textContent = scale === 'UV' ? '· Y1S2 onwards' : '· Y1S1 only';
+  document.getElementById('ref-title').textContent = scale === 'UV' ? 'UV Scale Reference' : 'USJR Scale Reference';
+  buildRefGrid();
+  calc();
+}
+
+// ── REFERENCE GRID ──
+function buildRefGrid() {
+  const grid = document.getElementById('refGrid');
+  const table = currentScale === 'UV' ? UV_SCALE : USJR_SCALE;
+  grid.innerHTML = '';
+  for (const b of table) {
+    if (b.min === b.max) continue; // skip 5.00 failing edge
+    const div = document.createElement('div');
+    div.className = 'ref-item';
+    const uvLabel = b.min === b.max ? b.min.toFixed(2) : `${b.min.toFixed(2)}–${b.max.toFixed(2)}`;
+    const pctLabel = `${b.pctMin.toFixed(0)}–${b.pctMax.toFixed(0)}%`;
+    div.innerHTML = `
+      <div>
+        <div class="ref-uv">${uvLabel}</div>
+        <div class="ref-desc">${b.desc} · ${b.us}</div>
+      </div>
+      <div class="ref-pct">${pctLabel}</div>
+    `;
+    grid.appendChild(div);
+  }
+}
+
+// ── CLEAR ──
+function clearAll() {
+  for (let i = 0; i < ROWS; i++) {
+    document.getElementById(`name-${i}`).value = '';
+    document.getElementById(`credits-${i}`).value = '';
+    document.getElementById(`grade-${i}`).value = '';
+  }
+  calc();
+}
+
+// ── INIT ──
+buildTable();
+buildRefGrid();
+calc();
+</script>
+</body>
+</html>
