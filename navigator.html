@@ -1011,7 +1011,11 @@ table.dl tbody tr:hover { background: var(--ngs-paper-2); }
     const form = $('#lockForm'), input = $('#lockInput'), err = $('#lockErr');
     form.addEventListener('submit', e => {
       e.preventDefault();
-      if (input.value === D.config.password) {
+      const enteredPassword = input.value;
+      console.log('NGS_DATA:', window.NGS_DATA);
+      console.log('password entered:', enteredPassword);
+      console.log('expected:', window.NGS_DATA?.config?.password);
+      if (enteredPassword === D.config.password) {
         $('#lock').classList.add('is-hidden');
         document.body.style.overflow = '';
       } else {
