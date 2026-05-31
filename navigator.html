@@ -686,9 +686,18 @@ table.dl tbody tr:hover { background: var(--ngs-paper-2); }
   // scholars-data.js declares `const NGS_DATA` in the shared global lexical
   // scope, which is NOT exposed on `window`. Bind to the in-scope identifier
   // and mirror it onto window so window.NGS_DATA references resolve too.
-  const D = (typeof NGS_DATA !== 'undefined') ? NGS_DATA : window.NGS_DATA;
+  const D = (typeof NGS_DATA !== 'undefined') ? NGS_DATA : (window.NGS_DATA || null);
   window.NGS_DATA = D;
   const $ = (s, r) => (r || document).querySelector(s);
+  // Safety net: if scholars-data.js didn't load, fail loudly and visibly
+  // instead of crashing cryptically at the first D.config read.
+  if (!D || !D.config) {
+    console.error('[NGS] scholars-data.js did not load — NGS_DATA is undefined. ' +
+      'Confirm scholars-data.js is deployed next to navigator.html, then hard-refresh (Ctrl/Cmd+Shift+R).');
+    const sub = document.querySelector('#lock .lock-sub');
+    if (sub) { sub.textContent = 'scholars-data.js failed to load — hard-refresh (Ctrl/Cmd+Shift+R)'; sub.style.color = '#E4977A'; }
+    return;
+  }
   const el = (tag, cls, html) => { const n = document.createElement(tag); if (cls) n.className = cls; if (html != null) n.innerHTML = html; return n; };
   const SCHOLAR_KEYS = ['claire', 'april', 'aljane'];
   const NAMECLASS = { Claire: '', April: 't-april', Aljane: 't-aljane' };
